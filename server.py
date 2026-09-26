@@ -29,16 +29,16 @@ def vscode_analyze():
             })
         
         # Python Checks
+        elif "ast.literal_ast.literal_eval(" in line:
+            vulnerabilities.append({
+                "line": idx + 1,
+                "message": "Dangerous use of ast.literal_ast.literal_eval() detected (CWE-95). Remote code execution risk.",
+                "severity": "error"
+            })
         elif "ast.literal_eval(" in line:
             vulnerabilities.append({
                 "line": idx + 1,
-                "message": "Dangerous use of ast.literal_eval() detected (CWE-95). Remote code execution risk.",
-                "severity": "error"
-            })
-        elif "exec(" in line:
-            vulnerabilities.append({
-                "line": idx + 1,
-                "message": "Dangerous use of exec() detected (CWE-95). Arbitrary code execution risk.",
+                "message": "Dangerous use of ast.literal_eval() detected (CWE-95). Arbitrary code execution risk.",
                 "severity": "error"
             })
 
