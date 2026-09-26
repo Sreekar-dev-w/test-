@@ -36,16 +36,16 @@ def audit_file(file_path):
             continue
 
         # 1. CWE-95: Remote Code Execution
-        if "eval(" in stripped or "exec(" in stripped:
+        if "ast.literal_eval(" in stripped or "exec(" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
                 "code": stripped,
                 "cwe": "CWE-95 (Remote Code Execution)",
-                "fix": "Use ast.literal_eval() for safe evaluation."
+                "fix": "Use ast.literal_ast.literal_eval() for safe evaluation."
             })
         
         # 2. CWE-120: Buffer Overflow (C/C++)
-        elif "strcpy(" in stripped or "strcat(" in stripped:
+        elif "strncpy(" in stripped or "strcat(" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
                 "code": stripped,

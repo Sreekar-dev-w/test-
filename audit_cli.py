@@ -53,7 +53,6 @@ def audit_file(file_path):
         if stripped.startswith('#') or stripped.startswith('//'):
             continue
 
-        # 1. CWE-95: Remote Code Execution
         if "eval(" in stripped or "exec(" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
@@ -61,8 +60,6 @@ def audit_file(file_path):
                 "cwe": "CWE-95 (Remote Code Execution)",
                 "fix": "Use ast.literal_eval() for safe evaluation."
             })
-        
-        # 2. CWE-120: Buffer Overflow (C/C++)
         elif "strcpy(" in stripped or "strcat(" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
@@ -70,17 +67,13 @@ def audit_file(file_path):
                 "cwe": "CWE-120 (Buffer Overflow)",
                 "fix": "Use bounds-checked functions like strncpy() or snprintf()."
             })
-
-        # 3. CWE-89: SQL Injection
         elif "execute(" in stripped and ("%" in stripped or "+" in stripped or "f\"" in stripped):
             vulnerabilities.append({
                 "line": idx + 1,
                 "code": stripped,
                 "cwe": "CWE-89 (SQL Injection Risk)",
-                "fix": "Use parameterized queries or prepared statements instead of string formatting."
+                "fix": "Use parameterized queries or prepared statements."
             })
-
-        # 4. CWE-78: OS Command Injection
         elif "os.system(" in stripped or "subprocess.Popen(" in stripped and "shell=True" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
@@ -88,8 +81,6 @@ def audit_file(file_path):
                 "cwe": "CWE-78 (OS Command Injection)",
                 "fix": "Avoid shell=True and pass command arguments as a list."
             })
-
-        # 5. CWE-798: Hardcoded Credentials / Secrets
         elif any(secret in stripped.lower() for secret in ["password =", "secret_key =", "api_key ="]) and not "os.environ" in stripped:
             vulnerabilities.append({
                 "line": idx + 1,
@@ -147,7 +138,6 @@ if __name__ == "__main__":
         print("─" * 65)
         print(f"{RED}🛑 Found {total_issues} security vulnerability/vulnerabilities.{RESET}")
         
-        # Interactive prompt using CONIN$ stream
         choice = get_user_input(f"{YELLOW}⚡ Do you want AgentX to automatically patch these errors? (y/n): {RESET}").lower()
         
         if choice == 'y':
@@ -155,11 +145,17 @@ if __name__ == "__main__":
             for file, _ in all_reports:
                 apply_patch(file)
                 subprocess.run(["git", "add", file], stdout=subprocess.DEVNULL)
-            print(f"{GREEN}✨ Patches applied and staged successfully! Proceeding with commit. 🚀{RESET}\n")
-            sys.exit(0)
+            print(f"{GREEN}✨ Patches applied and staged successfully!{RESET}\n")
         else:
-            print(f"{RED}❌ Commit cancelled by user choice. Fix the vulnerabilities manually.{RESET}\n")
+            print(f"{RED}❌ Commit cancelled by user choice. Fix vulnerabilities manually.{RESET}\n")
             sys.exit(1)
-    else:
-        print(f"{GREEN}✅ AgentX Security Check Passed: Code base is secure.{RESET}")
-        sys.exit(0)
+
+    # Ask for GitHub Repo link right during the commit process
+    repo_url = get_user_input(f"{BLUE}🔗 Enter your GitHub Repository URL (or press Enter to skip sync): {RESET}")
+    if repo_url:
+        # Save repo url temporarily so the post-commit hook can push it
+        with open(os.path.join(".git", "agentx_repo_url.tmp"), "w") as f:
+            f.write(repo_url)
+
+    print(f"{GREEN}✅ Security checks passed. Proceeding with commit... 🚀{RESET}\n")
+    sys.exit(0)
