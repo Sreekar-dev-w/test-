@@ -10,7 +10,7 @@ YELLOW = "\033[93m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-def get_user_input(prompt):
+def get_terminal_input(prompt):
     """Bypasses Git hook restrictions by reading directly from the active Windows terminal."""
     try:
         if os.name == 'nt':
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         print("─" * 65)
         print(f"{RED}🛑 Found {total_issues} security vulnerability/vulnerabilities.{RESET}")
         
-        choice = get_user_input(f"{YELLOW}⚡ Do you want AgentX to automatically patch these errors? (y/n): {RESET}").lower()
+        choice = get_terminal_input(f"{YELLOW}⚡ Do you want AgentX to automatically patch these errors? (y/n): {RESET}").lower()
         
         if choice == 'y':
             print(f"{YELLOW}✨ Applying automatic patches...{RESET}")
@@ -147,11 +147,11 @@ if __name__ == "__main__":
                 subprocess.run(["git", "add", file], stdout=subprocess.DEVNULL)
             print(f"{GREEN}✨ Patches applied and staged successfully!{RESET}\n")
         else:
-            print(f"{RED}❌ Commit cancelled by user choice. Fix vulnerabilities manually.{RESET}\n")
+            print(f"{RED}❌ Commit cancelled by user choice.{RESET}\n")
             sys.exit(1)
 
-    # Ask for GitHub Repository Link right here during commit
-    repo_url = get_user_input(f"{BLUE}🔗 Enter your GitHub Repository URL (or press Enter to skip sync): {RESET}")
+    # Optional GitHub sync
+    repo_url = get_terminal_input(f"{BLUE}🔗 Enter GitHub Repository URL (or press Enter to skip): {RESET}")
     if repo_url:
         try:
             subprocess.run(["git", "remote", "remove", "origin"], stderr=subprocess.DEVNULL)
@@ -162,5 +162,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"{RED}⚠️ GitHub sync note: {e}{RESET}")
 
-    print(f"{GREEN}✅ AgentX Security Check Passed: Proceeding with commit... 🚀{RESET}\n")
+    print(f"{GREEN}✅ Security Check Passed: Proceeding with commit... 🚀{RESET}\n")
     sys.exit(0)
